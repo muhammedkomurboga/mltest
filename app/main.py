@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from prometheus_client import Counter, Histogram
 from prometheus_fastapi_instrumentator import Instrumentator
-import joblib, numpy as np
+import joblib
+import numpy as np
 
 app = FastAPI()
 model = joblib.load("model.joblib")
@@ -16,6 +17,7 @@ CONFIDENCE = Histogram(
 )
 
 Instrumentator().instrument(app).expose(app)
+
 
 class Input(BaseModel):
     features: list[float]
