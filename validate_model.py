@@ -4,7 +4,7 @@ import joblib
 from sklearn.datasets import load_iris
 from sklearn.metrics import accuracy_score
 
-THRESHOLD = 1.10
+THRESHOLD = 0.90
 
 X, y = load_iris(return_X_y=True)
 model = joblib.load("model.joblib")
