@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    triggers { pollSCM('H/2 * * * *') }
     environment {
         IMAGE = "ml-api"
         CONTAINER = "ml-api"
@@ -8,13 +9,36 @@ pipeline {
         stage('Checkout') {
             steps { checkout scm }
         }
-        stage('Test') {
+        stage('Setup') {
             steps {
                 sh '''
                 python3 -m venv venv
                 . venv/bin/activate
-                pip install -r requirements.txt
+                pip install -r requirements.txt ruff
+                '''
+            }
+        }
+        stage('Lint') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                ruff check app tests validate_model.py
+                '''
+            }
+        }
+        stage('Test') {
+            steps {
+                sh '''
+                . venv/bin/activate
                 pytest -q
+                '''
+            }
+        }
+        stage('Validate model') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                python validate_model.py
                 '''
             }
         }
@@ -34,6 +58,7 @@ pipeline {
                 sh '''
                 sleep 5
                 curl -f http://host.docker.internal:8000/health
+                curl -f http://host.docker.internal:8000/metrics > /dev/null
                 curl -f -X POST http://host.docker.internal:8000/predict \
                   -H "Content-Type: application/json" \
                   -d '{"features":[5.1,3.5,1.4,0.2]}'
@@ -42,6 +67,7 @@ pipeline {
         }
     }
     post {
+        success { echo "Pipeline geslaagd: model gedeployed" }
         failure { sh 'docker logs $CONTAINER || true' }
     }
 }
