@@ -1,0 +1,26 @@
+groups:
+  - name: ml-api-alerts
+    rules:
+      - alert: ApiDown
+        expr: up{job="ml-api"} == 0
+        for: 15s
+        annotations:
+          summary: "ML API is onbereikbaar"
+
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"4xx|5xx"}[1m])) / sum(rate(http_requests_total[1m])) > 0.2
+        for: 30s
+        annotations:
+          summary: "Meer dan 20% van de requests geeft een fout"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[1m]))) > 0.5
+        for: 30s
+        annotations:
+          summary: "p95 response time boven 0,5 s"
+
+      - alert: LowModelConfidence
+        expr: sum(rate(model_prediction_confidence_sum[5m])) / sum(rate(model_prediction_confidence_count[5m])) < 0.6
+        for: 1m
+        annotations:
+          summary: "Gemiddelde confidence van het model is laag"
