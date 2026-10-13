@@ -1,9 +1,9 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from prometheus_client import Counter, Histogram
-from prometheus_fastapi_instrumentator import Instrumentator
 import joblib
 import numpy as np
+from fastapi import FastAPI, HTTPException
+from prometheus_client import Counter, Histogram
+from prometheus_fastapi_instrumentator import Instrumentator
+from pydantic import BaseModel
 
 app = FastAPI()
 model = joblib.load("model.joblib")
