@@ -11,3 +11,9 @@ def test_predict():
     r = client.post("/predict", json={"features": [5.1, 3.5, 1.4, 0.2]})
     assert r.status_code == 200
     assert "prediction" in r.json()
+
+
+def test_version():
+    r = client.get("/version")
+    assert r.status_code == 200
+    assert "model_version" in r.json()
